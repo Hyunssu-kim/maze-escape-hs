@@ -3,21 +3,20 @@ const http = require('http');
 const { Server } = require('socket.io');
 const path = require('path');
 
-// 1. Express 앱 및 HTTP 서버 생성
 const app = express();
 const server = http.createServer(app);
 
-// 2. Socket.IO 서버를 HTTP 서버에 연결
+// WebSocket을 우선 사용하도록 transport 설정 추가
 const io = new Server(server, {
     cors: { 
-        origin: "*", // 프로덕션에서는 특정 도메인으로 제한하는 것이 좋습니다.
-    }
+        origin: "*",
+    },
+    transports: ['websocket', 'polling'] // WebSocket을 우선으로 사용
 });
 
-// 3. 정적 파일 제공 미들웨어 설정
 app.use(express.static(path.join(__dirname, 'public')));
 
-// 4. 게임 로직 (GameServer 클래스는 변경 없음)
+// GameServer 클래스 (변경 없음)
 class GameServer {
     constructor() {
         this.mazeSize = 15;
@@ -145,7 +144,6 @@ class GameServer {
 
 const game = new GameServer();
 
-// 5. Socket.IO 연결 핸들러
 io.on('connection', (socket) => {
     game.connectedPlayers++;
     io.emit('players-update', game.connectedPlayers);
@@ -163,5 +161,4 @@ io.on('connection', (socket) => {
     });
 });
 
-// 6. Vercel이 실행할 수 있도록 HTTP 서버를 export
 module.exports = server;

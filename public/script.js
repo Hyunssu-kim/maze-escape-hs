@@ -1,7 +1,9 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Vercel 환경에 맞게 Socket.IO 연결 경로를 명시적으로 설정합니다.
-    const socket = io({ path: '/socket.io' });
+    const socket = io({ 
+        transports: ['websocket', 'polling'] // 서버와 동일하게 WebSocket 우선 설정
+    });
 
+    // DOM 요소 가져오기
     const mazeElement = document.getElementById('maze');
     const playerXElement = document.getElementById('playerX');
     const playerYElement = document.getElementById('playerY');
@@ -11,9 +13,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const rankingListElement = document.getElementById('rankingList');
     const voteButtons = document.querySelectorAll('.vote-btn');
 
-    let mazeData = [];
-    let playerPos = { x: 1, y: 1 };
-    let exitPos = { x: 13, y: 13 };
+    let mazeData = [], playerPos = { x: 1, y: 1 }, exitPos = { x: 13, y: 13 };
+
+    // 디바운스 함수
+    function debounce(func, delay) {
+        let timeout;
+        return function(...args) {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func.apply(this, args), delay);
+        };
+    }
+
+    // 디바운스가 적용된 투표 함수
+    const debouncedVote = debounce((direction) => {
+        socket.emit('vote', direction);
+    }, 250); // 250ms (0.25초) 딜레이
 
     function renderMaze() {
         mazeElement.innerHTML = '';
@@ -82,18 +96,12 @@ document.addEventListener('DOMContentLoaded', () => {
     voteButtons.forEach(btn => {
         btn.addEventListener('click', () => {
             const direction = btn.dataset.direction;
-            socket.emit('vote', direction);
+            debouncedVote(direction); // 디바운스된 함수 호출
         });
     });
 
-    socket.on('game-state', (state) => {
-        updateUI(state);
-    });
-
-    socket.on('players-update', (count) => {
-        playerCountElement.textContent = count;
-    });
-
+    socket.on('game-state', updateUI);
+    socket.on('players-update', (count) => playerCountElement.textContent = count);
     socket.on('connect_error', (err) => {
         console.error("Connection failed:", err.message);
         mazeElement.innerHTML = `<div class="loading">Connection Error: ${err.message}. Please refresh.</div>`;
