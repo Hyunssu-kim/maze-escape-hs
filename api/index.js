@@ -1,7 +1,6 @@
 const http = require('http');
 const express = require('express');
 const { Server } = require('socket.io');
-const path = require('path');
 
 const app = express();
 const server = http.createServer(app);
@@ -155,9 +154,6 @@ io.on('connection', (socket) => {
     });
 });
 
-// 정적 파일 제공을 위한 라우트 핸들러
-// Vercel은 이 핸들러를 사용하여 public 폴더의 파일을 제공합니다.
-app.use(express.static(path.join(__dirname, '../public')));
-
 // Vercel이 실행할 수 있도록 HTTP 서버를 export
+// 이제 이 서버는 오직 Socket.IO 통신에만 집중합니다.
 module.exports = server;
