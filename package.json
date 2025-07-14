@@ -8,7 +8,16 @@
     "build": "echo 'No build step required'",
     "start": "echo 'Use vercel dev for local development'"
   },
-  "keywords": ["game", "multiplayer", "realtime", "maze"],
+  "keywords": [
+    "game",
+    "multiplayer",
+    "realtime",
+    "maze"
+  ],
   "author": "",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "express": "^5.1.0",
+    "socket.io": "^4.8.1"
+  }
 }
