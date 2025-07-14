@@ -140,9 +140,14 @@ class GameStateManager {
                 this.movePlayer(winningDirection);
             }
             
-            // 투표 리셋
-            this.gameState.votes = { up: 0, down: 0, left: 0, right: 0 };
+            // 투표 리셋 및 타이머 리셋
+            this.resetVotes();
             this.gameState.lastMoveTime = now;
+        }
+        
+        // 출구에 도달했을 때 게임 리셋 (5초 후)
+        if (this.gameState.atExit && timeSinceLastMove >= 5000) {
+            this.resetGame();
         }
         
         // 남은 시간 계산
@@ -150,17 +155,27 @@ class GameStateManager {
         this.gameState.lastUpdate = now;
     }
 
+    resetVotes() {
+        this.gameState.votes = { up: 0, down: 0, left: 0, right: 0 };
+        this.gameState.lastUpdate = Date.now();
+    }
+
+    resetGame() {
+        this.gameState.playerPos = { x: 1, y: 1 };
+        this.gameState.atExit = false;
+        this.gameState.maze = this.generateMaze();
+        this.gameState.lastMoveTime = Date.now();
+        this.resetVotes();
+    }
+
     getState() {
         return { ...this.gameState };
     }
 }
 
-// 전역 게임 상태 매니저 (서버리스 환경에서는 각 요청마다 새로 생성)
-let globalGameState = null;
+// 전역 게임 상태 매니저 - Vercel의 메모리에서 상태 유지
+global.gameStateManager = global.gameStateManager || new GameStateManager();
 
 export function getGameStateManager() {
-    if (!globalGameState) {
-        globalGameState = new GameStateManager();
-    }
-    return globalGameState;
+    return global.gameStateManager;
 }

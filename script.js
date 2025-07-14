@@ -55,6 +55,17 @@ class MazeEscapeGame {
     }
 
     updateFromGameState(gameState) {
+        // 미로나 플레이어 위치가 변경된 경우에만 렌더링
+        const mazeChanged = JSON.stringify(this.maze) !== JSON.stringify(gameState.maze);
+        const playerMoved = this.playerPos.x !== gameState.playerPos.x || this.playerPos.y !== gameState.playerPos.y;
+        
+        // 투표가 변경된 경우에만 랭킹 업데이트
+        const votesChanged = JSON.stringify(this.votes) !== JSON.stringify(gameState.votes);
+        
+        // 게임 상태가 변경된 경우에만 상태 업데이트
+        const statusChanged = this.atExit !== gameState.atExit;
+        
+        // 상태 업데이트
         this.maze = gameState.maze;
         this.playerPos = gameState.playerPos;
         this.exitPos = gameState.exitPos;
@@ -62,11 +73,22 @@ class MazeEscapeGame {
         this.timeLeft = gameState.timeLeft;
         this.atExit = gameState.atExit;
         
-        this.renderMaze();
-        this.updateDisplay();
-        this.updateRanking();
+        // 변경된 부분만 업데이트
+        if (mazeChanged || playerMoved) {
+            this.renderMaze();
+            this.updateDisplay();
+        }
+        
+        if (votesChanged) {
+            this.updateRanking();
+        }
+        
+        if (statusChanged) {
+            this.updateGameStatus();
+        }
+        
+        // 타이머는 항상 업데이트 (1초마다)
         this.updateTimerDisplay();
-        this.updateGameStatus();
         
         // 접속자 수 업데이트
         document.getElementById('playerCount').textContent = gameState.connectedPlayers || 0;
