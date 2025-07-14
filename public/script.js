@@ -73,20 +73,18 @@ class MazeEscapeGame {
     }
 
     startPolling() {
-        // 1초마다 게임 상태 폴링
+        // 1초마다 통합 게임 상태 폴링 (타이머 포함)
         this.pollInterval = setInterval(async () => {
             if (this.connected) {
-                await this.loadGameState();
-                
-                // 타이머 업데이트를 위한 추가 폴링
                 try {
                     const timerResponse = await fetch('/api/game-timer');
                     if (timerResponse.ok) {
-                        const timerState = await timerResponse.json();
-                        this.updateFromGameState(timerState);
+                        const gameState = await timerResponse.json();
+                        this.updateFromGameState(gameState);
                     }
                 } catch (error) {
-                    console.error('타이머 업데이트 실패:', error);
+                    console.error('게임 상태 업데이트 실패:', error);
+                    this.showConnectionError();
                 }
             }
         }, 1000);
