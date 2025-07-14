@@ -1,6 +1,7 @@
 const http = require('http');
 const express = require('express');
 const { Server } = require('socket.io');
+const path = require('path');
 
 const app = express();
 const server = http.createServer(app);
@@ -8,6 +9,10 @@ const server = http.createServer(app);
 const io = new Server(server, {
     cors: { origin: '*' },
 });
+
+// 서버가 모든 요청을 처리하므로, 정적 파일 제공 기능을 다시 추가합니다.
+// __dirname은 현재 파일(api/index.js)의 위치를 가리키므로, public 폴더로 가려면 상위 폴더로 이동해야 합니다.
+app.use(express.static(path.join(__dirname, '../public')));
 
 // GameServer 클래스 (변경 없음)
 class GameServer {
@@ -155,5 +160,4 @@ io.on('connection', (socket) => {
 });
 
 // Vercel이 실행할 수 있도록 HTTP 서버를 export
-// 이제 이 서버는 오직 Socket.IO 통신에만 집중합니다.
 module.exports = server;
