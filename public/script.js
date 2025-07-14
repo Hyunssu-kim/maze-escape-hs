@@ -1,6 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const socket = io({ 
-        transports: ['websocket', 'polling'] // 서버와 동일하게 WebSocket 우선 설정
+    // 현재 URL을 기준으로 서버에 연결하고, 통신 경로와 transport 방식을 명시합니다.
+    const socket = io(window.location.origin, {
+        path: '/socket.io/', // 서버와 동일한 경로 지정
+        transports: ['websocket', 'polling']
     });
 
     // DOM 요소 가져오기
@@ -27,7 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 디바운스가 적용된 투표 함수
     const debouncedVote = debounce((direction) => {
         socket.emit('vote', direction);
-    }, 250); // 250ms (0.25초) 딜레이
+    }, 250);
 
     function renderMaze() {
         mazeElement.innerHTML = '';
@@ -96,7 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
     voteButtons.forEach(btn => {
         btn.addEventListener('click', () => {
             const direction = btn.dataset.direction;
-            debouncedVote(direction); // 디바운스된 함수 호출
+            debouncedVote(direction);
         });
     });
 

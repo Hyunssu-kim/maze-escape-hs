@@ -6,12 +6,13 @@ const path = require('path');
 const app = express();
 const server = http.createServer(app);
 
-// WebSocket을 우선 사용하도록 transport 설정 추가
+// WebSocket을 우선 사용하고, 통신 경로를 명시적으로 지정합니다.
 const io = new Server(server, {
+    path: '/socket.io/', // 통신 경로 명시
+    transports: ['websocket', 'polling'],
     cors: { 
         origin: "*",
     },
-    transports: ['websocket', 'polling'] // WebSocket을 우선으로 사용
 });
 
 app.use(express.static(path.join(__dirname, 'public')));
