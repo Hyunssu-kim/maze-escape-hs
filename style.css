@@ -1,0 +1,480 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #1a1a1a;
+    min-height: 100vh;
+    overflow: hidden;
+}
+
+.game-container {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+}
+
+/* 헤더 */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 25px 0;
+    margin-bottom: 25px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.header h1 {
+    font-size: 36px;
+    font-weight: 800;
+    background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -1px;
+}
+
+.timer-display {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+#countdown {
+    font-size: 32px;
+    font-weight: 700;
+    color: #fff;
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+    padding: 15px 25px;
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(238, 90, 36, 0.3);
+    font-family: 'SF Mono', 'Monaco', 'Cascadia Code', monospace;
+    border: none;
+}
+
+.status {
+    padding: 15px 25px;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    font-weight: 600;
+    color: #fff;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+/* 메인 그리드 */
+.main-grid {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 350px 280px;
+    gap: 20px;
+    height: calc(100vh - 120px);
+}
+
+/* 미로 섹션 */
+.maze-section {
+    display: flex;
+    flex-direction: column;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    border-radius: 24px;
+    padding: 25px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.maze {
+    flex: 1;
+    display: grid;
+    grid-template-columns: repeat(15, 1fr);
+    grid-template-rows: repeat(15, 1fr);
+    gap: 3px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 16px;
+    max-height: calc(100vh - 200px);
+    padding: 8px;
+    box-shadow: inset 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.maze-cell {
+    background: rgba(255, 255, 255, 0.9);
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 20px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.maze-cell.wall {
+    background: rgba(0, 0, 0, 0.8);
+}
+
+.maze-cell.start {
+    background: rgba(255, 255, 255, 0.7);
+}
+
+.maze-cell.exit {
+    background: linear-gradient(135deg, #10ac84 0%, #00d2d3 100%);
+    color: white;
+    font-weight: bold;
+    font-size: 10px;
+    box-shadow: 0 4px 16px rgba(16, 172, 132, 0.4);
+}
+
+.maze-cell.player {
+    background: linear-gradient(135deg, #ff9ff3 0%, #f368e0 100%);
+    box-shadow: 0 4px 16px rgba(243, 104, 224, 0.4);
+}
+
+.player-char {
+    width: 80%;
+    height: 80%;
+    background: linear-gradient(135deg, #ff9ff3 0%, #f368e0 100%);
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 12px;
+    box-shadow: 0 4px 12px rgba(243, 104, 224, 0.3);
+}
+
+.position-info {
+    margin-top: 20px;
+    font-size: 16px;
+    font-weight: 600;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.9);
+    font-family: 'SF Mono', 'Monaco', 'Cascadia Code', monospace;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 12px 20px;
+    border-radius: 12px;
+    backdrop-filter: blur(10px);
+}
+
+/* 투표 섹션 */
+.vote-section {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    border-radius: 24px;
+    padding: 30px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+}
+
+.vote-section h2 {
+    text-align: center;
+    margin-bottom: 35px;
+    font-size: 22px;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.9);
+    letter-spacing: -0.5px;
+}
+
+.vote-grid {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 25px;
+}
+
+.vote-top, .vote-middle, .vote-bottom {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.vote-middle {
+    gap: 100px;
+}
+
+.vote-btn {
+    width: 80px;
+    height: 80px;
+    border: none;
+    font-size: 32px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 20px;
+    backdrop-filter: blur(20px);
+    position: relative;
+    overflow: hidden;
+}
+
+.vote-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.1) 100%);
+    border-radius: 20px;
+    transition: all 0.3s ease;
+}
+
+.vote-btn:hover {
+    transform: translateY(-8px) scale(1.05);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+}
+
+.vote-btn:active {
+    transform: translateY(-4px) scale(1.02);
+}
+
+.vote-btn.up {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+    color: white;
+    box-shadow: 0 8px 32px rgba(238, 90, 36, 0.3);
+}
+
+.vote-btn.down {
+    background: linear-gradient(135deg, #a55eea 0%, #8e44ad 100%);
+    color: white;
+    box-shadow: 0 8px 32px rgba(165, 94, 234, 0.3);
+}
+
+.vote-btn.left {
+    background: linear-gradient(135deg, #3742fa 0%, #2f3542 100%);
+    color: white;
+    box-shadow: 0 8px 32px rgba(55, 66, 250, 0.3);
+}
+
+.vote-btn.right {
+    background: linear-gradient(135deg, #ffa726 0%, #ff7043 100%);
+    color: white;
+    box-shadow: 0 8px 32px rgba(255, 167, 38, 0.3);
+}
+
+.vote-info {
+    margin-top: 30px;
+    text-align: center;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.7);
+    line-height: 1.6;
+    font-weight: 500;
+}
+
+/* 실시간 순위 섹션 */
+.ranking-section {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    border-radius: 24px;
+    padding: 25px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+}
+
+.ranking-section h3 {
+    text-align: center;
+    margin-bottom: 15px;
+    font-size: 20px;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.9);
+    letter-spacing: -0.5px;
+}
+
+.players-info {
+    text-align: center;
+    margin-bottom: 20px;
+    padding: 8px 15px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    color: rgba(255, 255, 255, 0.8);
+    font-weight: 600;
+    font-size: 14px;
+}
+
+#playerCount {
+    color: #ffa726;
+    font-weight: 700;
+}
+
+.ranking-list {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.ranking-item {
+    display: flex;
+    align-items: center;
+    padding: 16px 20px;
+    border-radius: 16px;
+    border: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    backdrop-filter: blur(20px);
+}
+
+.ranking-item.rank-1 {
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.3) 0%, rgba(255, 193, 7, 0.2) 100%);
+    border: 1px solid rgba(255, 215, 0, 0.4);
+    transform: scale(1.02);
+    box-shadow: 0 8px 32px rgba(255, 215, 0, 0.2);
+}
+
+.ranking-item.rank-2 {
+    background: linear-gradient(135deg, rgba(192, 192, 192, 0.3) 0%, rgba(169, 169, 169, 0.2) 100%);
+    border: 1px solid rgba(192, 192, 192, 0.4);
+    box-shadow: 0 4px 16px rgba(192, 192, 192, 0.2);
+}
+
+.ranking-item.rank-3 {
+    background: linear-gradient(135deg, rgba(205, 127, 50, 0.3) 0%, rgba(184, 134, 11, 0.2) 100%);
+    border: 1px solid rgba(205, 127, 50, 0.4);
+    box-shadow: 0 4px 16px rgba(205, 127, 50, 0.2);
+}
+
+.ranking-item:not(.rank-1):not(.rank-2):not(.rank-3) {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.rank-number {
+    font-size: 20px;
+    font-weight: 800;
+    width: 35px;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.9);
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    padding: 8px 0;
+    margin-right: 15px;
+}
+
+.rank-arrow {
+    font-size: 28px;
+    font-weight: bold;
+    flex: 1;
+    text-align: center;
+}
+
+.rank-arrow.up { 
+    color: #ff6b6b;
+    text-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
+}
+.rank-arrow.down { 
+    color: #a55eea;
+    text-shadow: 0 2px 8px rgba(165, 94, 234, 0.3);
+}
+.rank-arrow.left { 
+    color: #3742fa;
+    text-shadow: 0 2px 8px rgba(55, 66, 250, 0.3);
+}
+.rank-arrow.right { 
+    color: #ffa726;
+    text-shadow: 0 2px 8px rgba(255, 167, 38, 0.3);
+}
+
+.no-votes {
+    text-align: center;
+    color: rgba(255, 255, 255, 0.6);
+    font-style: italic;
+    padding: 40px 0;
+    font-size: 15px;
+    font-weight: 500;
+}
+
+.disabled {
+    opacity: 0.5;
+    cursor: not-allowed !important;
+    pointer-events: none;
+}
+
+/* 반응형 */
+@media (max-width: 1200px) {
+    .main-grid {
+        grid-template-columns: 1fr 300px 250px;
+    }
+}
+
+@media (max-width: 1000px) {
+    .main-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .header {
+        flex-direction: column;
+        gap: 15px;
+        padding: 15px 0;
+    }
+    
+    .timer-display {
+        gap: 15px;
+    }
+    
+    #countdown {
+        font-size: 28px;
+        padding: 8px 16px;
+    }
+    
+    .vote-btn {
+        width: 60px;
+        height: 60px;
+        font-size: 24px;
+    }
+    
+    .vote-middle {
+        gap: 60px;
+    }
+    
+    .maze {
+        max-height: 60vh;
+    }
+}
+
+@media (max-width: 600px) {
+    body {
+        overflow: auto;
+    }
+    
+    .game-container {
+        height: auto;
+        overflow: visible;
+        padding: 5px;
+    }
+    
+    .vote-btn {
+        width: 50px;
+        height: 50px;
+        font-size: 20px;
+    }
+    
+    .vote-middle {
+        gap: 40px;
+    }
+    
+    .header h1 {
+        font-size: 24px;
+    }
+    
+    #countdown {
+        font-size: 24px;
+    }
+}
