@@ -5,10 +5,11 @@ class MazeEscapeGame {
         this.playerPos = { x: 1, y: 1 };
         this.exitPos = { x: 13, y: 13 };
         this.votes = { up: 0, down: 0, left: 0, right: 0 };
-        this.timeLeft = 60; // 1분 = 60초
+        this.timeLeft = 60;
         this.gameActive = true;
         this.atExit = false;
-        this.socket = null;
+        this.connected = false;
+        this.pollInterval = null;
         
         this.init();
     }
@@ -17,169 +18,82 @@ class MazeEscapeGame {
         this.setupEventListeners();
         this.connectToServer();
         this.updateDisplay();
-        this.updateRanking(); // 초기 순위 표시
+        this.updateRanking();
+        this.startPolling();
     }
 
-    connectToServer() {
-        this.socket = io({
-            timeout: 5000,
-            reconnection: true,
-            reconnectionDelay: 1000,
-            reconnectionAttempts: 5,
-            maxReconnectionAttempts: 10
-        });
-        
-        // 서버 연결 성공
-        this.socket.on('connect', () => {
-            console.log('서버에 연결되었습니다!');
-            this.hideConnectionError();
-        });
-
-        // 연결 에러 처리
-        this.socket.on('connect_error', (error) => {
+    async connectToServer() {
+        try {
+            const response = await fetch('/api/game-state', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'connect' })
+            });
+            
+            if (response.ok) {
+                console.log('서버에 연결되었습니다!');
+                this.connected = true;
+                this.hideConnectionError();
+                await this.loadGameState();
+            }
+        } catch (error) {
             console.error('연결 실패:', error);
             this.showConnectionError();
-        });
+        }
+    }
 
-        // 연결 해제 처리
-        this.socket.on('disconnect', (reason) => {
-            console.log('연결이 끊어졌습니다:', reason);
-            if (reason === 'io server disconnect') {
-                this.socket.connect();
+    async loadGameState() {
+        try {
+            const response = await fetch('/api/game-state');
+            if (response.ok) {
+                const gameState = await response.json();
+                this.updateFromGameState(gameState);
             }
-            this.showConnectionError();
-        });
+        } catch (error) {
+            console.error('게임 상태 로드 실패:', error);
+        }
+    }
 
-        // 재연결 시도
-        this.socket.on('reconnect_attempt', (attemptNumber) => {
-            console.log(`재연결 시도 중... (${attemptNumber}번째)`);
-            this.showReconnecting(attemptNumber);
-        });
-
-        // 재연결 성공
-        this.socket.on('reconnect', (attemptNumber) => {
-            console.log(`재연결 성공! (${attemptNumber}번 시도 후)`);
-            this.hideConnectionError();
-        });
-
-        // 재연결 실패
-        this.socket.on('reconnect_failed', () => {
-            console.error('재연결에 실패했습니다.');
-            this.showConnectionError('재연결에 실패했습니다. 페이지를 새로고침해주세요.');
-        });
-
-        // 게임 상태 받기
-        this.socket.on('game-state', (gameState) => {
-            this.maze = gameState.maze;
-            this.playerPos = gameState.playerPos;
-            this.exitPos = gameState.exitPos;
-            this.votes = gameState.votes;
-            this.timeLeft = gameState.timeLeft;
-            this.atExit = gameState.atExit;
-            
-            this.renderMaze();
-            this.updateDisplay();
-            this.updateRanking();
-            this.updateTimerDisplay();
-            this.updateGameStatus();
-        });
-
-        // 타이머 업데이트
-        this.socket.on('timer-update', (timeLeft) => {
-            this.timeLeft = timeLeft;
-            this.updateTimerDisplay();
-        });
-
-        // 투표 업데이트
-        this.socket.on('vote-update', (votes) => {
-            this.votes = votes;
-            this.updateRanking();
-        });
-
-        // 플레이어 이동
-        this.socket.on('player-moved', (data) => {
-            this.playerPos = data.position;
-            this.renderMaze();
-            this.updateDisplay();
-        });
-
-        // 출구 도달
-        this.socket.on('exit-reached', () => {
-            this.atExit = true;
-            this.reachExit();
-        });
-
-        // 게임 리셋
-        this.socket.on('game-reset', (data) => {
-            this.maze = data.maze;
-            this.playerPos = data.playerPos;
-            this.atExit = false;
-            this.resetGame();
-        });
-
+    updateFromGameState(gameState) {
+        this.maze = gameState.maze;
+        this.playerPos = gameState.playerPos;
+        this.exitPos = gameState.exitPos;
+        this.votes = gameState.votes;
+        this.timeLeft = gameState.timeLeft;
+        this.atExit = gameState.atExit;
+        
+        this.renderMaze();
+        this.updateDisplay();
+        this.updateRanking();
+        this.updateTimerDisplay();
+        this.updateGameStatus();
+        
         // 접속자 수 업데이트
-        this.socket.on('players-update', (count) => {
-            document.getElementById('playerCount').textContent = count;
-        });
+        document.getElementById('playerCount').textContent = gameState.connectedPlayers || 0;
+    }
+
+    startPolling() {
+        // 1초마다 게임 상태 폴링
+        this.pollInterval = setInterval(async () => {
+            if (this.connected) {
+                await this.loadGameState();
+                
+                // 타이머 업데이트를 위한 추가 폴링
+                try {
+                    const timerResponse = await fetch('/api/game-timer');
+                    if (timerResponse.ok) {
+                        const timerState = await timerResponse.json();
+                        this.updateFromGameState(timerState);
+                    }
+                } catch (error) {
+                    console.error('타이머 업데이트 실패:', error);
+                }
+            }
+        }, 1000);
     }
 
     generateMaze() {
-        // 미로 초기화 (모든 셀을 벽으로)
-        this.maze = Array(this.mazeSize).fill().map(() => Array(this.mazeSize).fill(1));
-        
-        // 간단한 미로 생성 - 랜덤 경로
-        const stack = [];
-        const visited = Array(this.mazeSize).fill().map(() => Array(this.mazeSize).fill(false));
-        
-        // 시작점 설정
-        let current = { x: 1, y: 1 };
-        this.maze[current.y][current.x] = 0;
-        visited[current.y][current.x] = true;
-        stack.push(current);
-        
-        const directions = [
-            { x: 0, y: -2 }, { x: 0, y: 2 },
-            { x: -2, y: 0 }, { x: 2, y: 0 }
-        ];
-        
-        while (stack.length > 0) {
-            const neighbors = [];
-            
-            for (let dir of directions) {
-                const next = {
-                    x: current.x + dir.x,
-                    y: current.y + dir.y
-                };
-                
-                if (next.x > 0 && next.x < this.mazeSize - 1 && 
-                    next.y > 0 && next.y < this.mazeSize - 1 && 
-                    !visited[next.y][next.x]) {
-                    neighbors.push(next);
-                }
-            }
-            
-            if (neighbors.length > 0) {
-                const next = neighbors[Math.floor(Math.random() * neighbors.length)];
-                
-                // 현재 위치와 다음 위치 사이의 벽 제거
-                const wallX = current.x + (next.x - current.x) / 2;
-                const wallY = current.y + (next.y - current.y) / 2;
-                
-                this.maze[wallY][wallX] = 0;
-                this.maze[next.y][next.x] = 0;
-                visited[next.y][next.x] = true;
-                
-                stack.push(next);
-                current = next;
-            } else {
-                current = stack.pop();
-            }
-        }
-        
-        // 출구 설정 (확실히 길 만들기)
-        this.maze[this.exitPos.y][this.exitPos.x] = 0;
-        this.maze[this.exitPos.y - 1][this.exitPos.x] = 0;
-        this.maze[this.exitPos.y][this.exitPos.x - 1] = 0;
+        // 미로는 서버에서 생성되므로 클라이언트에서는 불필요
     }
 
     renderMaze() {
@@ -215,15 +129,38 @@ class MazeEscapeGame {
         document.querySelectorAll('.vote-btn').forEach(btn => {
             btn.addEventListener('click', (e) => this.handleVote(e));
         });
+
+        // 페이지 언로드 시 연결 해제
+        window.addEventListener('beforeunload', () => {
+            if (this.connected) {
+                navigator.sendBeacon('/api/game-state', JSON.stringify({ action: 'disconnect' }));
+            }
+        });
     }
 
-    handleVote(e) {
-        if (!this.gameActive || this.atExit) return;
+    async handleVote(e) {
+        if (!this.gameActive || this.atExit || !this.connected) return;
         
         const direction = e.currentTarget.dataset.direction;
         
-        // 서버에 투표 전송
-        this.socket.emit('vote', direction);
+        try {
+            const response = await fetch('/api/game-state', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'vote', direction })
+            });
+            
+            if (response.ok) {
+                const result = await response.json();
+                if (result.success) {
+                    this.votes = result.votes;
+                    this.updateRanking();
+                }
+            }
+        } catch (error) {
+            console.error('투표 실패:', error);
+            this.showConnectionError();
+        }
         
         // 버튼 클릭 효과
         e.currentTarget.style.transform = 'scale(0.9)';
@@ -232,14 +169,9 @@ class MazeEscapeGame {
         }, 100);
     }
 
-    updateVoteDisplay() {
-        this.updateRanking();
-    }
-
     updateRanking() {
         const rankingList = document.getElementById('rankingList');
         
-        // 투표 데이터를 배열로 변환하고 정렬
         const voteData = [
             { direction: 'up', arrow: '↑', votes: this.votes.up, color: 'up' },
             { direction: 'down', arrow: '↓', votes: this.votes.down, color: 'down' },
@@ -247,11 +179,9 @@ class MazeEscapeGame {
             { direction: 'right', arrow: '→', votes: this.votes.right, color: 'right' }
         ];
 
-        // 0건이 아닌 것만 필터링하고 투표수로 정렬
         const filteredData = voteData.filter(item => item.votes > 0);
         filteredData.sort((a, b) => b.votes - a.votes);
 
-        // 순위 표시 업데이트
         if (filteredData.length === 0) {
             rankingList.innerHTML = '<div class="no-votes">No votes yet</div>';
         } else {
@@ -271,13 +201,6 @@ class MazeEscapeGame {
         }
     }
 
-    addToLog(direction, color) {
-        // 로그 기능 제거됨
-    }
-
-    // 타이머는 서버에서 관리하므로 제거
-    // startTimer() 메소드 제거됨
-
     updateTimerDisplay() {
         const minutes = Math.floor(this.timeLeft / 60);
         const seconds = this.timeLeft % 60;
@@ -285,13 +208,9 @@ class MazeEscapeGame {
             `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
     }
 
-    // 이동 로직은 서버에서 처리되므로 제거
-    // executeMove(), movePlayer() 메소드 제거됨
-
     reachExit() {
         this.updateGameStatus();
         
-        // 투표 버튼 비활성화
         document.querySelectorAll('.vote-btn').forEach(btn => {
             btn.classList.add('disabled');
         });
@@ -302,7 +221,6 @@ class MazeEscapeGame {
         this.updateDisplay();
         this.updateGameStatus();
         
-        // 투표 버튼 재활성화
         document.querySelectorAll('.vote-btn').forEach(btn => {
             btn.classList.remove('disabled');
         });
@@ -319,9 +237,6 @@ class MazeEscapeGame {
             document.getElementById('gameStatus').style.color = '#fff';
         }
     }
-
-    // 서버에서 관리되므로 제거됨
-    // showWinnerAnnouncement(), resetVotes() 메소드 제거됨
 
     updateDisplay() {
         document.getElementById('playerX').textContent = this.playerPos.x;
@@ -350,10 +265,6 @@ class MazeEscapeGame {
         }
         errorDiv.textContent = message;
         errorDiv.style.display = 'block';
-    }
-
-    showReconnecting(attemptNumber) {
-        this.showConnectionError(`재연결 시도 중... (${attemptNumber}번째)`);
     }
 
     hideConnectionError() {
