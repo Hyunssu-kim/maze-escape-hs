@@ -6,21 +6,9 @@ const path = require('path');
 const app = express();
 const server = http.createServer(app);
 
-// Vercel 환경을 위한 최종 Socket.IO 설정
 const io = new Server(server, {
-    // 1. WebSocket 연결을 최우선으로 시도
-    transports: ['websocket', 'polling'],
-    // 2. Vercel의 프록시 타임아웃에 대응
-    pingTimeout: 60000,
-    pingInterval: 25000,
-    // 3. CORS 설정
-    cors: {
-        origin: '*', // 모든 도메인에서의 접속 허용
-    },
+    cors: { origin: '*' },
 });
-
-// 정적 파일 제공
-app.use(express.static(path.join(__dirname, 'public')));
 
 // GameServer 클래스 (변경 없음)
 class GameServer {
@@ -166,6 +154,10 @@ io.on('connection', (socket) => {
         io.emit('players-update', game.connectedPlayers);
     });
 });
+
+// 정적 파일 제공을 위한 라우트 핸들러
+// Vercel은 이 핸들러를 사용하여 public 폴더의 파일을 제공합니다.
+app.use(express.static(path.join(__dirname, '../public')));
 
 // Vercel이 실행할 수 있도록 HTTP 서버를 export
 module.exports = server;

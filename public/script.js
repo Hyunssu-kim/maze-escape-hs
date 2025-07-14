@@ -1,10 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Vercel 환경을 위한 최종 클라이언트 설정
+    // Vercel의 표준 API 경로를 사용하도록 설정
     const socket = io({
-        // 1. WebSocket 사용을 강제하여 연결 안정성 확보
-        transports: ['websocket'],
-        // 2. 불필요한 업그레이드 시도 방지
-        upgrade: false,
+        path: '/socket.io',
+        transports: ['websocket', 'polling'],
     });
 
     // DOM 요소 가져오기
