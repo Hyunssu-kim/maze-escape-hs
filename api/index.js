@@ -6,12 +6,20 @@ const path = require('path');
 const app = express();
 const server = http.createServer(app);
 
+// Vercel 환경을 위한 최종 Socket.IO 서버 설정
 const io = new Server(server, {
+    // 1. Vercel 서버가 잠들지 않도록 주기적으로 신호를 보냄
+    pingInterval: 20000, // 20초마다 ping 신호 전송
+    pingTimeout: 45000,  // 45초 동안 응답이 없으면 연결 끊김으로 간주
+
+    // 2. WebSocket을 최우선으로 사용하도록 명시
+    transports: ['websocket', 'polling'],
+
+    // 3. CORS 설정
     cors: { origin: '*' },
 });
 
 // 서버가 모든 요청을 처리하므로, 정적 파일 제공 기능을 다시 추가합니다.
-// __dirname은 현재 파일(api/index.js)의 위치를 가리키므로, public 폴더로 가려면 상위 폴더로 이동해야 합니다.
 app.use(express.static(path.join(__dirname, '../public')));
 
 // GameServer 클래스 (변경 없음)
