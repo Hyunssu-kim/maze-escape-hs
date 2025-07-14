@@ -3,18 +3,21 @@ const http = require('http');
 const { Server } = require('socket.io');
 const path = require('path');
 
+// 1. Express 앱 및 HTTP 서버 생성
 const app = express();
 const server = http.createServer(app);
 
-// Socket.IO 서버를 생성하고, Vercel 환경에 맞게 경로를 설정합니다.
+// 2. Socket.IO 서버를 HTTP 서버에 연결
 const io = new Server(server, {
-    path: '/socket.io',
+    cors: { 
+        origin: "*", // 프로덕션에서는 특정 도메인으로 제한하는 것이 좋습니다.
+    }
 });
 
-// 정적 파일 미들웨어를 먼저 등록합니다.
+// 3. 정적 파일 제공 미들웨어 설정
 app.use(express.static(path.join(__dirname, 'public')));
 
-// GameServer 클래스 (이전과 동일, 변경 없음)
+// 4. 게임 로직 (GameServer 클래스는 변경 없음)
 class GameServer {
     constructor() {
         this.mazeSize = 15;
@@ -142,6 +145,7 @@ class GameServer {
 
 const game = new GameServer();
 
+// 5. Socket.IO 연결 핸들러
 io.on('connection', (socket) => {
     game.connectedPlayers++;
     io.emit('players-update', game.connectedPlayers);
@@ -159,22 +163,5 @@ io.on('connection', (socket) => {
     });
 });
 
-// 모든 요청을 Express 앱과 Socket.IO 서버로 전달합니다.
-// Vercel은 이 핸들러를 사용합니다.
-module.exports = (req, res) => {
-    // Socket.IO가 요청을 처리해야 하는지 확인합니다.
-    if (req.url.startsWith('/socket.io')) {
-        io.engine.handleRequest(req, res);
-    } else {
-        // 그렇지 않으면 Express 앱이 처리합니다.
-        app(req, res);
-    }
-};
-
-// 로컬 개발용 리스너
-if (require.main === module) {
-    const PORT = process.env.PORT || 3000;
-    server.listen(PORT, () => {
-        console.log(`🚀 로컬 서버 실행: http://localhost:${PORT}`);
-    });
-}
+// 6. Vercel이 실행할 수 있도록 HTTP 서버를 export
+module.exports = server;
