@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const socket = io();
+    // Vercel 환경에 맞게 Socket.IO 연결 경로를 명시적으로 설정합니다.
+    const socket = io({ path: '/socket.io' });
 
     const mazeElement = document.getElementById('maze');
     const playerXElement = document.getElementById('playerX');
@@ -31,7 +32,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateUI(state) {
-        // 미로, 플레이어, 출구 위치 업데이트
         if (JSON.stringify(mazeData) !== JSON.stringify(state.maze) || 
             playerPos.x !== state.playerPos.x || playerPos.y !== state.playerPos.y) {
             mazeData = state.maze;
@@ -44,7 +44,6 @@ document.addEventListener('DOMContentLoaded', () => {
         playerYElement.textContent = state.playerPos.y;
         playerCountElement.textContent = state.connectedPlayers;
 
-        // 타이머 및 게임 상태 업데이트
         const minutes = Math.floor(state.timeLeft / 60).toString().padStart(2, '0');
         const seconds = (state.timeLeft % 60).toString().padStart(2, '0');
         countdownElement.textContent = `${minutes}:${seconds}`;
@@ -59,7 +58,6 @@ document.addEventListener('DOMContentLoaded', () => {
             voteButtons.forEach(btn => btn.disabled = false);
         }
 
-        // 투표 현황 업데이트
         const voteData = Object.entries(state.votes)
             .map(([direction, votes]) => ({ direction, votes }))
             .filter(item => item.votes > 0)
@@ -96,6 +94,10 @@ document.addEventListener('DOMContentLoaded', () => {
         playerCountElement.textContent = count;
     });
 
-    // 초기 연결 시 로딩 표시
+    socket.on('connect_error', (err) => {
+        console.error("Connection failed:", err.message);
+        mazeElement.innerHTML = `<div class="loading">Connection Error: ${err.message}. Please refresh.</div>`;
+    });
+
     mazeElement.innerHTML = '<div class="loading">Connecting to server...</div>';
 });
