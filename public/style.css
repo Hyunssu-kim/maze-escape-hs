@@ -1,0 +1,358 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    overflow-x: hidden;
+}
+
+.game-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 30px;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+h1 {
+    font-size: 3.5rem;
+    font-weight: 600;
+    color: #fff;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    margin-bottom: 10px;
+}
+
+.timer-display {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+#countdown {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #fff;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.status {
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-size: 1.2rem;
+    font-weight: 600;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: #fff;
+}
+
+.main-grid {
+    display: grid;
+    grid-template-columns: 1fr 350px 300px;
+    gap: 30px;
+    align-items: start;
+}
+
+.maze-section {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    padding: 25px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.maze {
+    display: grid;
+    grid-template-columns: repeat(15, 1fr);
+    gap: 2px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    padding: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.maze-cell {
+    width: 25px;
+    height: 25px;
+    border-radius: 3px;
+    transition: all 0.3s ease;
+}
+
+.maze-cell.wall {
+    background: rgba(255, 255, 255, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.maze-cell.player {
+    background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
+    border: 2px solid #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 10px rgba(255, 107, 107, 0.5);
+}
+
+.player-char {
+    color: #fff;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.maze-cell.exit {
+    background: linear-gradient(135deg, #4ecdc4, #44a08d);
+    color: #fff;
+    font-weight: bold;
+    font-size: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 10px rgba(78, 205, 196, 0.5);
+}
+
+.maze-cell.start {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.position-info {
+    margin-top: 15px;
+    text-align: center;
+    font-size: 1.1rem;
+    color: #fff;
+    font-weight: 500;
+}
+
+.vote-section {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    padding: 25px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.vote-section h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #fff;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.vote-grid {
+    display: grid;
+    grid-template-areas: 
+        ". up ."
+        "left . right"
+        ". down .";
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.vote-top { grid-area: up; }
+.vote-middle { 
+    grid-area: left / right; 
+    display: flex; 
+    justify-content: space-between; 
+}
+.vote-bottom { grid-area: down; }
+
+.vote-btn {
+    width: 70px;
+    height: 70px;
+    border: none;
+    border-radius: 50%;
+    font-size: 2rem;
+    font-weight: bold;
+    color: #fff;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.vote-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+.vote-btn:active {
+    transform: translateY(0);
+}
+
+.vote-btn.up {
+    background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
+}
+
+.vote-btn.down {
+    background: linear-gradient(135deg, #a855f7, #c084fc);
+}
+
+.vote-btn.left {
+    background: linear-gradient(135deg, #3b82f6, #60a5fa);
+}
+
+.vote-btn.right {
+    background: linear-gradient(135deg, #f59e0b, #fbbf24);
+}
+
+.vote-btn.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+.vote-info {
+    text-align: center;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.8);
+    font-style: italic;
+}
+
+.ranking-section {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    padding: 25px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.ranking-section h3 {
+    text-align: center;
+    margin-bottom: 15px;
+    color: #fff;
+    font-size: 1.3rem;
+    font-weight: 600;
+}
+
+.players-info {
+    text-align: center;
+    margin-bottom: 15px;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 500;
+}
+
+.ranking-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.ranking-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 15px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+}
+
+.ranking-item:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-1px);
+}
+
+.rank-number {
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: #fff;
+    min-width: 30px;
+}
+
+.rank-arrow {
+    font-size: 1.5rem;
+}
+
+.rank-arrow.up { color: #ff6b6b; }
+.rank-arrow.down { color: #a855f7; }
+.rank-arrow.left { color: #3b82f6; }
+.rank-arrow.right { color: #f59e0b; }
+
+.rank-1 {
+    background: linear-gradient(135deg, #ffd700, #ffed4e) !important;
+    color: #000 !important;
+    border-color: #ffd700 !important;
+    box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+}
+
+.rank-1 .rank-number {
+    color: #000;
+}
+
+.no-votes {
+    text-align: center;
+    font-style: italic;
+    color: rgba(255, 255, 255, 0.6);
+    padding: 20px;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 1200px) {
+    .main-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+}
+
+@media (max-width: 768px) {
+    .game-container {
+        padding: 15px;
+        margin: 10px;
+    }
+    
+    h1 {
+        font-size: 2.5rem;
+    }
+    
+    .timer-display {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    #countdown {
+        font-size: 2rem;
+    }
+    
+    .maze-cell {
+        width: 20px;
+        height: 20px;
+    }
+    
+    .vote-btn {
+        width: 60px;
+        height: 60px;
+        font-size: 1.8rem;
+    }
+    
+    .vote-section, .ranking-section, .maze-section {
+        padding: 20px;
+    }
+}

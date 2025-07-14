@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAZE ESCAPE</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-container">
+        <!-- 헤더 -->
+        <header class="header">
+            <h1>MAZE ESCAPE</h1>
+            <div class="timer-display">
+                <span id="countdown">01:00</span>
+                <div class="status" id="gameStatus">VOTING</div>
+            </div>
+        </header>
+
+        <!-- 메인 게임 영역 -->
+        <div class="main-grid">
+            <!-- 미로 -->
+            <div class="maze-section">
+                <div id="maze" class="maze"></div>
+                <div class="position-info">
+                    POS: (<span id="playerX">1</span>, <span id="playerY">1</span>)
+                </div>
+            </div>
+
+            <!-- 투표 컨트롤 -->
+            <div class="vote-section">
+                <h2>VOTE DIRECTION</h2>
+                <div class="vote-grid">
+                    <div class="vote-top">
+                        <button class="vote-btn up" data-direction="up" data-color="red">↑</button>
+                    </div>
+                    <div class="vote-middle">
+                        <button class="vote-btn left" data-direction="left" data-color="blue">←</button>
+                        <button class="vote-btn right" data-direction="right" data-color="yellow">→</button>
+                    </div>
+                    <div class="vote-bottom">
+                        <button class="vote-btn down" data-direction="down" data-color="purple">↓</button>
+                    </div>
+                </div>
+                <div class="vote-info">
+                    Every minute, character moves to the most voted direction
+                </div>
+            </div>
+
+            <!-- 실시간 순위 -->
+            <div class="ranking-section">
+                <h3>LIVE RANKING</h3>
+                <div class="players-info">
+                    <span>Players: <span id="playerCount">0</span></span>
+                </div>
+                <div id="rankingList" class="ranking-list">
+                    <div class="no-votes">No votes yet</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
