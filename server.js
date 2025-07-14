@@ -1,20 +1,25 @@
-const express = require('express');
 const http = require('http');
+const express = require('express');
 const { Server } = require('socket.io');
 const path = require('path');
 
 const app = express();
 const server = http.createServer(app);
 
-// WebSocket을 우선 사용하고, 통신 경로를 명시적으로 지정합니다.
+// Vercel 환경을 위한 최종 Socket.IO 설정
 const io = new Server(server, {
-    path: '/socket.io/', // 통신 경로 명시
+    // 1. WebSocket 연결을 최우선으로 시도
     transports: ['websocket', 'polling'],
-    cors: { 
-        origin: "*",
+    // 2. Vercel의 프록시 타임아웃에 대응
+    pingTimeout: 60000,
+    pingInterval: 25000,
+    // 3. CORS 설정
+    cors: {
+        origin: '*', // 모든 도메인에서의 접속 허용
     },
 });
 
+// 정적 파일 제공
 app.use(express.static(path.join(__dirname, 'public')));
 
 // GameServer 클래스 (변경 없음)
@@ -162,4 +167,5 @@ io.on('connection', (socket) => {
     });
 });
 
+// Vercel이 실행할 수 있도록 HTTP 서버를 export
 module.exports = server;

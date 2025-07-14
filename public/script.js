@@ -1,8 +1,10 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // 현재 URL을 기준으로 서버에 연결하고, 통신 경로와 transport 방식을 명시합니다.
-    const socket = io(window.location.origin, {
-        path: '/socket.io/', // 서버와 동일한 경로 지정
-        transports: ['websocket', 'polling']
+    // Vercel 환경을 위한 최종 클라이언트 설정
+    const socket = io({
+        // 1. WebSocket 사용을 강제하여 연결 안정성 확보
+        transports: ['websocket'],
+        // 2. 불필요한 업그레이드 시도 방지
+        upgrade: false,
     });
 
     // DOM 요소 가져오기
